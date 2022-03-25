@@ -93,10 +93,14 @@ public class ContentMedia implements Serializable{
 	
 	public ContentMedia(ObjectNode json) {
 		id = JsonNodeUtil.getJsonNodeAsInteger(json,"id");
+		isActive = JsonNodeUtil.getJsonNodeAsBoolean(json,"isActive");
+		updateData(json);
+	}
+
+	public void updateData(ObjectNode json) {
 		title = JsonNodeUtil.getJsonNodeAsText(json,"title");
 		url = JsonNodeUtil.getJsonNodeAsText(json,"url");
 		category =JsonNodeUtil.getJsonNodeAsText(json,"category");
-		isActive = JsonNodeUtil.getJsonNodeAsBoolean(json,"isActive");
 		globalDescription = JsonNodeUtil.getJsonNodeAsText(json,"globalDescription");
 		countryAccepted = JsonNodeUtil.getJsonNodeAsText(json,"countryAccepted");
 	}
