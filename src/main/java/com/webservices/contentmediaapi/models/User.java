@@ -15,6 +15,8 @@ public class User {
 	private String username;
 	
 	private String country;
+	
+	private String status;
 
 	public Integer getId() {
 		return id;
@@ -40,6 +42,14 @@ public class User {
 		this.country = country;
 	}
 	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public User() {
 		
 	}
@@ -48,6 +58,7 @@ public class User {
 		id = JsonNodeUtil.getJsonNodeAsInteger(json,"id");
 		username = JsonNodeUtil.getJsonNodeAsText(json,"username");
 		country = JsonNodeUtil.getJsonNodeAsText(json,"country");
+		status = JsonNodeUtil.getJsonNodeAsText(json,"status");
 	}
 	
 }

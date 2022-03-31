@@ -31,6 +31,8 @@ public class ContentMedia implements Serializable{
 	
 	private String countryAccepted;
 	
+	private String urlPoster;
+	
 	public Integer getId() {
 		return id;
 	}
@@ -87,6 +89,14 @@ public class ContentMedia implements Serializable{
 		this.countryAccepted = countryAccepted;
 	}
 	
+	public String getUrlPoster() {
+		return urlPoster;
+	}
+
+	public void setUrlPoster(String urlPoster) {
+		this.urlPoster = urlPoster;
+	}
+
 	public ContentMedia() {
 		
 	}

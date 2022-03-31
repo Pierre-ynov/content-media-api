@@ -11,4 +11,7 @@ import com.webservices.contentmediaapi.models.ContentMedia;
 public interface IContentMediaDao extends MongoRepository<ContentMedia,Integer>{
 	@Query("{'isActive': ?0, 'countryAccepted': ?1}")
 	public Optional<List<ContentMedia>> findContentMediaByIsActiveAndCountryAccepted(Boolean isActive, String countryAccepted);
+	
+	@Query("{'isActive': ?0, 'countryAccepted': ?1, 'category': ?2}")
+	public Optional<List<ContentMedia>> findContentMediaByIsActiveAndCountryAcceptedAndCategory(Boolean isActive, String countryAccepted, String category);
 }
