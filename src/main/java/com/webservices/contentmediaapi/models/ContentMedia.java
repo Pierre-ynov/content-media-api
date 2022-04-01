@@ -1,14 +1,22 @@
 package com.webservices.contentmediaapi.models;
 
 import java.io.Serializable;
+import java.util.UUID;
+
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.webservices.contentmediaapi.utils.JsonNodeUtil;
 
 import lombok.Data;
 @Data
+@Document
+@Inheritance(strategy = InheritanceType.JOINED)
 public class ContentMedia implements Serializable{
 
 	/**
@@ -17,7 +25,8 @@ public class ContentMedia implements Serializable{
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	private Integer id;
+	//@Field(name = "_id")
+	private String id;
 	
 	private String title;
 	
@@ -33,11 +42,13 @@ public class ContentMedia implements Serializable{
 	
 	private String urlPoster;
 	
-	public Integer getId() {
+	private String genre;
+	
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -96,21 +107,30 @@ public class ContentMedia implements Serializable{
 	public void setUrlPoster(String urlPoster) {
 		this.urlPoster = urlPoster;
 	}
+	
+	public String getGenre() {
+		return genre;
+	}
+
+	public void setGenre(String genre) {
+		this.genre = genre;
+	}
 
 	public ContentMedia() {
 		
 	}
 	
-	public ContentMedia(ObjectNode json) {
-		id = JsonNodeUtil.getJsonNodeAsInteger(json,"id");
-		isActive = JsonNodeUtil.getJsonNodeAsBoolean(json,"isActive");
+	public ContentMedia(ObjectNode json, String genre) {
+		id = UUID.randomUUID().toString();
+		isActive = true;
+		this.genre = genre;
 		updateData(json);
 	}
 
 	public void updateData(ObjectNode json) {
 		title = JsonNodeUtil.getJsonNodeAsText(json,"title");
 		url = JsonNodeUtil.getJsonNodeAsText(json,"url");
-		category =JsonNodeUtil.getJsonNodeAsText(json,"category");
+		category = JsonNodeUtil.getJsonNodeAsText(json,"category");
 		globalDescription = JsonNodeUtil.getJsonNodeAsText(json,"globalDescription");
 		countryAccepted = JsonNodeUtil.getJsonNodeAsText(json,"countryAccepted");
 	}
