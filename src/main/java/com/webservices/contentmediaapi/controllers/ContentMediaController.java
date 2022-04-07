@@ -1,5 +1,9 @@
 package com.webservices.contentmediaapi.controllers;
 
+import java.security.Timestamp;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +26,7 @@ import com.webservices.contentmediaapi.models.Movie;
 import com.webservices.contentmediaapi.models.Serie;
 import com.webservices.contentmediaapi.models.User;
 import com.webservices.contentmediaapi.utils.JsonNodeUtil;
+import com.webservices.contentmediaapi.utils.RequestPosterApiUtil;
 
 @RestController
 public class ContentMediaController {
@@ -44,7 +49,15 @@ public class ContentMediaController {
 		User user = new User(resultGetUserById.getBody());*/
 		User user = new User(json);
 		Optional<List<ContentMedia>> result = cmDao.findContentMediaByIsActiveAndCountryAccepted(true,user.getCountry());
-		return ResponseEntity.ok(new ListContentMediaResponse<ContentMedia>(true,result.get()));
+		List<ContentMedia> listContentMedia = result.get();
+		/*for(ContentMedia contentMedia : listContentMedia) {
+			String timeOfDay = "MATIN";
+			if(LocalDateTime.now().getHour()>= 12)
+				timeOfDay = "SOIR";
+			ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),timeOfDay);
+			contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(),"imageUrl"));
+		}*/
+		return ResponseEntity.ok(new ListContentMediaResponse<ContentMedia>(true,listContentMedia));
 	}
 	
 	@PostMapping("/content-media/create")
@@ -90,11 +103,16 @@ public class ContentMediaController {
 	
 	@GetMapping("/content-media/{id}")
 	public ResponseEntity<ContentMediaResponse<ContentMedia>> getContentMediaById(@PathVariable String id) {
-		System.out.println(id);
 		Optional<ContentMedia> result = cmDao.findById(id);
-		System.out.println(result);
+		
 		if(!result.isEmpty()) {
-			return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, result.get()));
+			ContentMedia contentMedia = result.get();
+			/*String timeOfDay = "MATIN";
+			if(LocalDateTime.now().getHour()>= 12)
+				timeOfDay = "SOIR";
+			ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),timeOfDay);
+			contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(),"imageUrl"));*/
+			return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, contentMedia));
 		}else {
 			return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
 					"L'id ne correspond à aucun contenu de media."));
@@ -141,6 +159,14 @@ public class ContentMediaController {
 		
 		List<ContentMedia> result = resultOptional.get();
 		
+		/*for(ContentMedia contentMedia : result) {
+			String timeOfDay = "MATIN";
+			if(LocalDateTime.now().getHour()>= 12)
+				timeOfDay = "SOIR";
+			ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),timeOfDay);
+			contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(),"imageUrl"));
+		}*/
+		
 		return ResponseEntity.ok(new ListContentMediaResponse<ContentMedia>(true,result));
 	}
 	
@@ -170,6 +196,13 @@ public class ContentMediaController {
 		Optional<List<ContentMedia>> resultOptional = cmDao.findContentMediaByIsActiveAndCountryAcceptedAndGenre(true,user.getCountry(),genreSelected.toLowerCase());
 		
 		List<ContentMedia> result = resultOptional.get();
+		for(ContentMedia contentMedia : result) {
+			String timeOfDay = "MATIN";
+			if(LocalDateTime.now().getHour()>= 12)
+				timeOfDay = "SOIR";
+			ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),timeOfDay);
+			contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(),"imageUrl"));
+		}
 		
 		return ResponseEntity.ok(new ListContentMediaResponse<ContentMedia>(true,result));
 	}
