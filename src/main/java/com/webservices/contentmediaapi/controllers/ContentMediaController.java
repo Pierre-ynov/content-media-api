@@ -5,6 +5,7 @@ import com.webservices.contentmediaapi.daos.IContentMediaDao;
 import com.webservices.contentmediaapi.models.*;
 import com.webservices.contentmediaapi.utils.JsonNodeUtil;
 import com.webservices.contentmediaapi.utils.RequestPosterApiUtil;
+import com.webservices.contentmediaapi.utils.RequestUserApiUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,30 +22,39 @@ public class ContentMediaController {
 
     @PostMapping("/content-media")
     public ResponseEntity<ListContentMediaResponse<ContentMedia>> getAllContentMedia(@RequestBody ObjectNode jsonUser) {
-		/*String userId = JsonNodeUtil.getJsonNodeAsText(jsonUser, "id");
+        // GET USER FROM USER API
+		String userId = JsonNodeUtil.getJsonNodeAsText(jsonUser, "id");
 		if (userId == null) {
 			return ResponseEntity.status(500).body(new ListContentMediaResponse<ContentMedia>(false,
 				"L'id utilisateur n'a pas réussi à être récupéré"));
 		}
 		ResponseEntity<ObjectNode> resultGetUserById = RequestUserApiUtil.getUserById(userId);
-		if (resultGetUserById.getStatusCodeValue() != 200) {
+        if (resultGetUserById.getStatusCodeValue() != 200) {
 			return ResponseEntity.status(500).body(new ListContentMediaResponse<ContentMedia>(false,
 				"Il y a eu un problème lors de la récupération de l'utilisateur"));
 		}
-		User user = new User(resultGetUserById.getBody());*/
-        User user = new User(jsonUser);
-        Optional<List<ContentMedia>> result = cmDao.findContentMediaByIsActiveAndCountryAccepted(true,
-                user.getCountry());
+		User user = new User(resultGetUserById.getBody());
+
+        // GET USER FROM JSON OBJECT
+//        User user = new User(jsonUser);
+
+        // GET MEDIA LIST
+        Optional<List<ContentMedia>> result = cmDao.findContentMediaByIsActiveAndCountryAccepted(true, user.getCountry());
         List<ContentMedia> listContentMedia = result.get();
-        /*for (ContentMedia contentMedia : listContentMedia) {
+
+        // GET POSTER FROM POSTER API
+        for (ContentMedia contentMedia : listContentMedia) {
             String timeOfDay = "MATIN";
             if (LocalDateTime.now().getHour() >= 12) {
                 timeOfDay = "SOIR";
             }
-            ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),
-                    timeOfDay);
-            contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(), "imageUrl"));
-        }*/
+            ObjectNode poster = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(), timeOfDay).getBody();
+            if (poster != null) {
+                contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(poster, "imageUrl"));
+            } else {
+                contentMedia.setUrlPoster(null);
+            }
+        }
         return ResponseEntity.ok(new ListContentMediaResponse<ContentMedia>(true, listContentMedia));
     }
 
@@ -53,7 +63,7 @@ public class ContentMediaController {
         String genre = JsonNodeUtil.getJsonNodeAsText(json, "genre");
         if (genre == null) {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "Le genre n'a pas " + "été" + " trouvé dans le corps de la requête."));
+                    "Le genre n'a pas été trouvé dans le corps de la requête."));
         }
         genre = genre.toLowerCase();
 
@@ -71,8 +81,8 @@ public class ContentMediaController {
                 }
                 return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, cmDao.save(newSerie)));
             default:
-                return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false, "Le genre fourni "
-                        + "ne correspond à aucun genre connu."));
+                return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
+                        "Le genre fourni ne correspond à aucun genre connu."));
         }
     }
 
@@ -85,7 +95,7 @@ public class ContentMediaController {
             return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, "Suppression réussite."));
         } else {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "L'id ne correspond " + "à" + " aucun contenu de media."));
+                    "L'id ne correspond à aucun contenu de media."));
         }
     }
 
@@ -95,16 +105,17 @@ public class ContentMediaController {
 
         if (!result.isEmpty()) {
             ContentMedia contentMedia = result.get();
-			/*String timeOfDay = "MATIN";
-			if(LocalDateTime.now().getHour()>= 12)
-				timeOfDay = "SOIR";
-			ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),
-			timeOfDay);
-			contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(),"imageUrl"));*/
+            String timeOfDay = "MATIN";
+            if (LocalDateTime.now().getHour() >= 12) {
+                timeOfDay = "SOIR";
+            }
+            ResponseEntity<ObjectNode> response = RequestPosterApiUtil.getPosterByContentMedia(contentMedia.getId(),
+                    timeOfDay);
+            contentMedia.setUrlPoster(JsonNodeUtil.getJsonNodeAsText(response.getBody(), "imageUrl"));
             return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, contentMedia));
         } else {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "L'id ne correspond " + "à" + " aucun contenu de media."));
+                    "L'id ne correspond à aucun media."));
         }
     }
 
@@ -118,7 +129,7 @@ public class ContentMediaController {
             return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, "Modification réussite"));
         } else {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "L'id ne correspond " + "à" + " aucun contenu de media."));
+                    "L'id ne correspond à aucun contenu de media."));
         }
     }
 
@@ -179,12 +190,12 @@ public class ContentMediaController {
         User user = new User(json);
         if (!user.getStatus().equals("ACTIVE")) {
             return ResponseEntity.status(500).body(new ListContentMediaResponse<ContentMedia>(false,
-                    "L'utilisateur " + "n'est pas actif"));
+                    "L'utilisateur n'est pas actif"));
         }
         String genreSelected = JsonNodeUtil.getJsonNodeAsText(json, "genre");
         if (genreSelected == null) {
             return ResponseEntity.status(500).body(new ListContentMediaResponse<ContentMedia>(false,
-                    "Le genre n'a " + "pas" + " été trouvé dans le corps de la requête"));
+                    "Le genre n'a pas été trouvé dans le corps de la requête"));
         }
         Optional<List<ContentMedia>> resultOptional = cmDao.findContentMediaByIsActiveAndCountryAcceptedAndGenre(true,
                 user.getCountry(), genreSelected.toLowerCase());
@@ -208,7 +219,7 @@ public class ContentMediaController {
         String newDescription = JsonNodeUtil.getJsonNodeAsText(json, "globalDescription");
         if (newDescription == null) {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "Aucune description " + "global n'a été trouvé dans le corps de la requête."));
+                    "Aucune description global n'a été trouvé dans le corps de la requête."));
         }
         Optional<ContentMedia> result = cmDao.findById(id);
         if (!result.isEmpty()) {
@@ -217,7 +228,7 @@ public class ContentMediaController {
             return ResponseEntity.ok(new ContentMediaResponse<ContentMedia>(true, "Modification réussite."));
         } else {
             return ResponseEntity.status(500).body(new ContentMediaResponse<ContentMedia>(false,
-                    "L'id ne correspond " + "à" + " aucun contenu de media."));
+                    "L'id ne correspond à aucun contenu de media."));
         }
     }
 }
