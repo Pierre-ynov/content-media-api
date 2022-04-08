@@ -7,9 +7,7 @@ import lombok.Data;
 @Data
 public class ListEpisodeResponse {
 	private List<Episode> content;
-	
 	private boolean isOk;
-	
 	private String message;
 
 	public ListEpisodeResponse() {

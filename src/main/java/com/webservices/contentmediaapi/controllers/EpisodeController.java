@@ -25,11 +25,8 @@ import com.webservices.contentmediaapi.utils.JsonNodeUtil;
 
 @RestController
 public class EpisodeController {
-
-	
 	@Autowired
 	IEpisodeDao eDao;
-	
 	@Autowired
 	IContentMediaDao cmDao;
 	

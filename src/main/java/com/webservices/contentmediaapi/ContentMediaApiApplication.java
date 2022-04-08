@@ -9,13 +9,12 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 public class ContentMediaApiApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ContentMediaApiApplication.class, args);
-	}
-	
-	@Bean
-	public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-		return restTemplateBuilder.build();
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(ContentMediaApiApplication.class, args);
+    }
 
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
+        return restTemplateBuilder.build();
+    }
 }
